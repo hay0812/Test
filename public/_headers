@@ -1,0 +1,30 @@
+# === 全ページ共通のセキュリティ設定 ===
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  # HSTS (HTTPS強制) - 半年間の設定
+  Strict-Transport-Security: max-age=15552000; includeSubDomains; preload
+  # CSP設定 (改行不可のため1行で記述)
+  Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests;
+
+# === 静的アセットのキャッシュ設定 (任意) ===
+# 画像などは長くキャッシュ
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+# === APIルートの設定 ===
+# APIはキャッシュさせない
+/api/*
+  Cache-Control: no-store
