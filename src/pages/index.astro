@@ -87,8 +87,8 @@ import UpcomingMaintenance from '../components/UpcomingMaintenance.astro';
     }
 
     try {
-      const rawUrl = 'https://raw.githubusercontent.com/x9mdq7dj4v-lgtm/Test/main/status.json';
-      const manualUrl = 'https://raw.githubusercontent.com/x9mdq7dj4v-lgtm/Test/main/manual_status.json'; 
+      const rawUrl = 'https://raw.githubusercontent.com/hay0812/Test/main/status.json';
+      const manualUrl = 'https://raw.githubusercontent.com/hay0812/Test/main/manual_status.json'; 
       const timestamp = new Date().getTime();
 
       const [statusRes, manualRes] = await Promise.all([
@@ -242,8 +242,7 @@ import UpcomingMaintenance from '../components/UpcomingMaintenance.astro';
     bannerContainer.innerHTML = bannerHtml;
     servicesContainer.innerHTML = servicesHtml;
     
-    // ▼ ここからAppleライクなUI/UXアニメーション ▼
-    // 1. 各要素を初期状態（少し下＆透明）にセット
+
     [bannerContainer, maintenanceContainer, servicesContainer].forEach(el => {
       el.style.display = 'block';
       el.style.opacity = '0';
