@@ -10,30 +10,31 @@ import UpcomingMaintenance from '../components/UpcomingMaintenance.astro';
       <p>システムステータスを確認中...</p>
     </div>
     
-    <div id="banner-container" style="display: none;"></div>
+    <div id="banner-container" class="initially-hidden"></div>
 
-    <div id="maintenance-container" style="display: none;">
+    <div id="maintenance-container" class="initially-hidden">
       <UpcomingMaintenance />
     </div>
 
-    <div id="services-container" style="display: none;"></div>
+    <div id="services-container" class="initially-hidden"></div>
     
   </div>
 </Layout>
 
 <script>
 
-  function escapeHTML(str) {
+  function escapeHTML(str: any) {
   if (typeof str !== 'string') return str;
-  return str.replace(/[&'`"<>]/g, function(match) {
-    return {
+  return str.replace(/[&'`"<>]/g, function(match: string) {
+    const replacements: Record<string, string> = {
       '&': '&amp;',
       "'": '&#x27;',
       '`': '&#x60;',
       '"': '&quot;',
       '<': '&lt;',
       '>': '&gt;',
-    }[match];
+    };
+    return replacements[match] || match;
   });
 }
 
@@ -425,4 +426,6 @@ html {
   .status-down { background: #fef2f2; color: #dc2626; }
   .status-unknown { background: #f3f4f6; color: #4b5563; }
   .status-maintenance { background: #eff6ff; color: #2563eb; }
+
+  .initially-hidden { display: none; }
 </style>
