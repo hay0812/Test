@@ -1,9 +1,11 @@
-# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: build
 
 on: [push, pull_request]
+
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -12,20 +14,26 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16]
+
+        node-version: [20, 22] 
 
     steps:
-    - uses: actions/checkout@v2
+    # 古いv2から、最新のv4へアップデート
+    - uses: actions/checkout@v4
+    
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+        
     - run: npm ci
     - run: npm run build --if-present
     - run: npm test
     - run: npm run coverage --if-present
+    
     - name: Coveralls
-      uses: coverallsapp/github-action@master
+
+      uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
