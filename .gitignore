@@ -3,5 +3,4 @@ dist/
 .astro/
 .env
 .DS_Store
-status.json
 public/
