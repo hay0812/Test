@@ -5,7 +5,7 @@ git pull origin mainでデプロイ前確認。
 操作手順
 
 git config pull.rebase false
-
+all
 
 キーボードの i を押す（下の方に -- INSERT -- と出ます）。
 （もし何か書き込みたければ書けますが、そのままでもOKです）
