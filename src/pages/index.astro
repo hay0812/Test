@@ -3,7 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import UpcomingMaintenance from '../components/UpcomingMaintenance.astro';
 ---
 
-<Layout title="Heyete System Status">
+<Layout title="Heyete System Status(臨時)">
+  <h1>このページではメインのステータスページが利用できない場合の予備となっています。</h1>
   <div class="status-wrapper">
     <div id="loading" class="loading">
       <div class="spinner"></div>
@@ -284,6 +285,10 @@ import UpcomingMaintenance from '../components/UpcomingMaintenance.astro';
 html {
     overflow-y: scroll;
   }
+
+  h1 {
+  font-size: 16px; /* ピクセル単位で直接指定 */
+}
 
 
   .status-wrapper {
