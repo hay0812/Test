@@ -3,7 +3,13 @@ name: Deploy Astro to GitHub Pages
 on:
   push:
     branches: [ main ]
-    paths-ignore:
+    paths:
+      - 'src/**'
+      - 'astro.config.mjs'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'manual_status.json'
+      - 'maintenance_info.json'
       - 'status.json'
   workflow_dispatch:
 
@@ -21,14 +27,104 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Decide whether to build
+        id: decide-build
+        run: |
+          set -e
+          changed_files=$(git diff --name-only HEAD^ HEAD || true)
+          echo "changed_files=$changed_files"
+          if [ -z "$changed_files" ]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          should_build=false
+          for file in $changed_files; do
+            if [ "$file" != "status.json" ] && [ "$file" != "manual_status.json" ] && [ "$file" != "maintenance_info.json" ]; then
+              should_build=true
+              break
+            fi
+            if [ "$file" = "manual_status.json" ] || [ "$file" = "maintenance_info.json" ]; then
+              should_build=true
+              break
+            fi
+          done
+          if [ "$should_build" = "false" ] && echo "$changed_files" | grep -qx "status.json" >/dev/null 2>&1; then
+            node - <<'NODE'
+const { execSync } = require('child_process');
+const fs = require('fs');
+
+function normalizeServices(items) {
+  return (items || [])
+    .map((item) => ({ id: item.id, name: item.name, status: item.status }))
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+}
+
+function isMeaningfulStatusDiff(prev, next) {
+  if (prev.system_status !== next.system_status) return true;
+
+  const groups = ['api_services', 'web_services'];
+  for (const group of groups) {
+    const prevItems = normalizeServices(prev[group]);
+    const nextItems = normalizeServices(next[group]);
+    if (prevItems.length !== nextItems.length) return true;
+    for (let i = 0; i < prevItems.length; i++) {
+      const a = prevItems[i];
+      const b = nextItems[i];
+      if (!b || a.id !== b.id || a.status !== b.status || a.name !== b.name) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+try {
+  const oldJSONtext = execSync('git show HEAD^:status.json', { encoding: 'utf8' });
+  const oldJSON = JSON.parse(oldJSONtext);
+  const newJSON = JSON.parse(fs.readFileSync('status.json', 'utf8'));
+  const meaningful = isMeaningfulStatusDiff(oldJSON, newJSON);
+  console.log('meaningful diff:', meaningful);
+  if (meaningful) {
+    process.exit(0);
+  }
+  process.exit(1);
+} catch (err) {
+  console.error('Failed to compare status.json with previous version:', err.message);
+  process.exit(0);
+}
+NODE
+            if [ $? -eq 0 ]; then
+              echo "should_build=true" >> $GITHUB_OUTPUT
+            else
+              echo "should_build=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "should_build=$should_build" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies
+        if: steps.decide-build.outputs.should_build == 'true'
+        run: npm install
+
+      - name: Build site
+        if: steps.decide-build.outputs.should_build == 'true'
+        run: npm run build
 
       - name: Upload artifact
+        if: steps.decide-build.outputs.should_build == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
-
       - name: Deploy to GitHub Pages
+        if: steps.decide-build.outputs.should_build == 'true'
         id: deployment
         uses: actions/deploy-pages@v4

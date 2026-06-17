@@ -8,6 +8,10 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "^6.1.5"
+    "@astrojs/cloudflare": "^13.7.0",
+    "astro": "^6.4.8"
+  },
+  "devDependencies": {
+    "wrangler": "^4.101.0"
   }
 }
