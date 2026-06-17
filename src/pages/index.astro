@@ -1,315 +1,176 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import UpcomingMaintenance from '../components/UpcomingMaintenance.astro';
+import statusData from '../../status.json';
+import manualData from '../../manual_status.json';
+import maintenanceInfo from '../../maintenance_info.json';
+
+const icons = {
+  ok: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+  warn: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+  down: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
+  unknown: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+  maintenance: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>`
+};
+
+function getBannerState(data: any, manualData: any) {
+  const isAllOk = data.system_status === 'all_systems_operational';
+  let bannerClass = isAllOk ? 'banner-ok' : 'banner-warning';
+  let title = isAllOk ? 'すべてのシステムが正常に稼働しています' : '一部のシステムに問題が発生しています';
+  let icon = isAllOk ? icons.ok : icons.warn;
+  let description = '';
+
+  if (manualData?.maintenance?.active) {
+    bannerClass = 'banner-maintenance';
+    icon = icons.maintenance;
+    title = manualData.maintenance.title || 'システムメンテナンス中です';
+    description = manualData.maintenance.description || '';
+  } else if (manualData?.incident?.active) {
+    bannerClass = 'banner-down';
+    icon = icons.down;
+    title = manualData.incident.title || 'システム障害が発生しています';
+    description = manualData.incident.description || '';
+  }
+
+  return { class: bannerClass, title, icon, description };
+}
+
+function getStatusBadge(service: any, manualData: any) {
+  const maintenanceActive = manualData?.maintenance?.active &&
+    (manualData.maintenance.id?.includes('all') || manualData.maintenance.id?.includes(service.id));
+  const incidentActive = manualData?.incident?.active &&
+    (manualData.incident.id?.includes('all') || manualData.incident.id?.includes(service.id));
+
+  if (maintenanceActive) {
+    return { icon: icons.maintenance, text: 'メンテ中', class: 'status-maintenance', latency: '-' };
+  }
+
+  if (incidentActive) {
+    return { icon: icons.down, text: '障害中', class: 'status-down', latency: '-' };
+  }
+
+  const latency = typeof service.latency_ms === 'number' ? `${service.latency_ms} ms` : '-';
+
+  if (service.status === 'degraded') {
+    return { icon: icons.warn, text: '警告・遅延', class: 'status-warn', latency };
+  }
+
+  if (service.status === 'down') {
+    return { icon: icons.down, text: '停止中', class: 'status-down', latency };
+  }
+
+  if (service.status === 'unknown') {
+    return { icon: icons.unknown, text: '不明', class: 'status-unknown', latency };
+  }
+
+  return { icon: icons.ok, text: '稼働中', class: 'status-ok', latency };
+}
+
+const bannerState = getBannerState(statusData, manualData);
+const updatedAt = new Date(statusData.last_updated).toLocaleString('ja-JP', {
+  timeZone: 'Asia/Tokyo',
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+});
 ---
 
 <Layout title="Heyete System Status(臨時)">
-  <h1>このページではメインのステータスページが利用できない場合の予備となっています。</h1>
   <div class="status-wrapper">
-    <div id="loading" class="loading">
-      <div class="spinner"></div>
-      <p>システムステータスを確認中...</p>
-    </div>
-    
-    <div id="banner-container" class="initially-hidden"></div>
+    <h1 class="page-title">このページはメインのステータスページが利用できない場合の予備です。</h1>
 
-    <div id="maintenance-container" class="initially-hidden">
-      <UpcomingMaintenance />
+    <div class={`overall-banner ${bannerState.class} fade-in`} style="--delay: 0s">
+      <div class="banner-icon" set:html={bannerState.icon}></div>
+      <div class="banner-text">
+        <h2>{bannerState.title}</h2>
+        {bannerState.description && <p class="banner-desc">{bannerState.description}</p>}
+        <p class="update-time">最終更新: {updatedAt}(JST)</p>
+      </div>
     </div>
 
-    <div id="services-container" class="initially-hidden"></div>
-    
+    <UpcomingMaintenance items={maintenanceInfo} />
+
+    {statusData.api_services?.length ? (
+      <section class="service-group fade-in" style="--delay: 0.1s">
+        <h3 class="group-title">APIサービス</h3>
+        <div class="service-list">
+          {statusData.api_services.map((service: any) => {
+            const badge = getStatusBadge(service, manualData);
+            return (
+              <div class="service-row" key={service.id}>
+                <div class="service-name">{service.name}</div>
+                <div class="service-details">
+                  <span class="latency">{badge.latency}</span>
+                  <div class={`status-badge ${badge.class}`}>
+                    <span class="status-icon" set:html={badge.icon}></span>
+                    <span>{badge.text}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    ) : null}
+
+    {statusData.web_services?.length ? (
+      <section class="service-group fade-in" style="--delay: 0.2s">
+        <h3 class="group-title">Webサービス</h3>
+        <div class="service-list">
+          {statusData.web_services.map((service: any) => {
+            const badge = getStatusBadge(service, manualData);
+            return (
+              <div class="service-row" key={service.id}>
+                <div class="service-name">{service.name}</div>
+                <div class="service-details">
+                  <span class="latency">{badge.latency}</span>
+                  <div class={`status-badge ${badge.class}`}>
+                    <span class="status-icon" set:html={badge.icon}></span>
+                    <span>{badge.text}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    ) : null}
   </div>
 </Layout>
 
-<script>
-
-  function escapeHTML(str: any) {
-  if (typeof str !== 'string') return str;
-  return str.replace(/[&'`"<>]/g, function(match: string) {
-    const replacements: Record<string, string> = {
-      '&': '&amp;',
-      "'": '&#x27;',
-      '`': '&#x60;',
-      '"': '&quot;',
-      '<': '&lt;',
-      '>': '&gt;',
-    };
-    return replacements[match] || match;
-  });
-}
-
-
-  const icons = {
-    ok: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
-    warn: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
-    down: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
-    unknown: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
-    maintenance: `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>`
-  };
-
-  function setHeyeteCookie(name: string, value: string, maxAgeSeconds: number) {
-    const domain = "backup-status.heyete.net";
-    const options = `max-age=${maxAgeSeconds}; domain=${domain}; path=/; samesite=strict; secure`;
-    document.cookie = `${name}=${encodeURIComponent(value)}; ${options}`;
-  }
-
-  function getHeyeteCookie(name: string): string | null {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    if (match) return decodeURIComponent(match[2]);
-    return null;
-  }
-
-  async function loadStatus() {
-    const timeCookie = 'h_for-now-lol';
-    const dataCookie = 'h_provisional-lol';
-    const manualCookie = 'h_manual-lol'; 
-    const now = Date.now();
-
-    const cachedTimeStr = getHeyeteCookie(timeCookie);
-    if (cachedTimeStr) {
-      const cachedTime = parseInt(cachedTimeStr, 10);
-      if (now - cachedTime < 30000) {
-        const cachedDataStr = getHeyeteCookie(dataCookie);
-        const cachedManualStr = getHeyeteCookie(manualCookie);
-
-        if (cachedDataStr) {
-          try {
-            const data = JSON.parse(cachedDataStr);
-            const manualData = cachedManualStr ? JSON.parse(cachedManualStr) : null; 
-            
-            renderStatus(data, manualData);
-            return;
-          } catch(e) {
-            console.error('キャッシュデータのパースに失敗しました', e);
-          }
-        }
-      }
-    }
-
-    try {
-      const rawUrl = 'https://raw.githubusercontent.com/hay0812/system-status-heyete/main/status.json';
-      const manualUrl = 'https://raw.githubusercontent.com/hay0812/system-status-heyete/main/manual_status.json'; 
-      const timestamp = new Date().getTime();
-
-      const [statusRes, manualRes] = await Promise.all([
-        fetch(`${rawUrl}?t=${timestamp}`),
-        fetch(`${manualUrl}?t=${timestamp}`).catch(() => null)
-      ]);
-      if (!statusRes.ok) throw new Error('Network response was not ok');
-      const data = await statusRes.json();
-      
-      let manualData = null;
-      if (manualRes && manualRes.ok) {
-        manualData = await manualRes.json();
-      }
-
-      setHeyeteCookie(timeCookie, now.toString(), 60);
-      setHeyeteCookie(dataCookie, JSON.stringify(data), 60);
-      if (manualData) {
-        setHeyeteCookie(manualCookie, JSON.stringify(manualData), 60);
-      } else {
-        setHeyeteCookie(manualCookie, "", 0);
-      }
-
-      renderStatus(data, manualData);
-    } catch (error) {
-      const loadingEl = document.getElementById('loading');
-      if (loadingEl) {
-        loadingEl.innerHTML = '<p class="error-text">⚠️ ステータス情報の取得に失敗しました。</p>';
-      }
-      console.error(error);
-    }
-  }
-
-  function generateServiceGroupHTML(title: string, services: any[], manualData: any = null) {
-    let html = `
-      <div class="service-group">
-        <h3 class="group-title">${title}</h3>
-        <div class="service-list">
-    `;
-    services.forEach((service: any) => {
-      let icon = icons.ok;
-      let statusText = '稼働中';
-      let statusColor = 'status-ok';
-      let latencyText = `${service.latency_ms || 0} ms`;
-
-      const isMaintenance = manualData?.maintenance?.active && 
-        (manualData.maintenance.id?.includes('all') || manualData.maintenance.id?.includes(service.id));
-        
-      const isIncident = manualData?.incident?.active && 
-        (manualData.incident.id?.includes('all') || manualData.incident.id?.includes(service.id));
-
-      if (isMaintenance) {
-        icon = icons.maintenance; 
-        statusText = 'メンテ中';
-        statusColor = 'status-maintenance';
-        latencyText = '-'; 
-      } else if (isIncident) {
-        icon = icons.down;
-        statusText = '障害中';
-        statusColor = 'status-down';
-      } 
-      else {
-        if (service.status === 'degraded') {
-          icon = icons.warn;
-          statusText = '警告・遅延';
-          statusColor = 'status-warn';
-        } else if (service.status === 'down') {
-          icon = icons.down;
-          statusText = '停止中';
-          statusColor = 'status-down';
-        } else if (service.status === 'unknown') {
-          icon = icons.unknown;
-          statusText = '不明';
-          statusColor = 'status-unknown';
-        }
-      }
-
-      html += `
-  <div class="service-row">
-    <div class="service-name">${escapeHTML(service.name)}</div>
-    <div class="service-details">
-      <span class="latency">${escapeHTML(latencyText)}</span>
-      <div class="status-badge ${statusColor}">
-        ${icon}
-        <span>${escapeHTML(statusText)}</span>
-      </div>
-    </div>
-  </div>
-`;
-    });
-
-    html += `</div></div>`;
-    return html;
-  }
-
-  function renderStatus(data: any, manualData: any = null) {
-    const bannerContainer = document.getElementById('banner-container')!;
-    const maintenanceContainer = document.getElementById('maintenance-container')!;
-    const servicesContainer = document.getElementById('services-container')!;
-    const loading = document.getElementById('loading')!;
-    
-    const isAllOk = data.system_status === 'all_systems_operational';
-    let overallClass = isAllOk ? 'banner-ok' : 'banner-warning';
-    let overallTitle = isAllOk ? 'すべてのシステムが正常に稼働しています' : '一部のシステムに問題が発生しています';
-    let overallIcon = isAllOk ? icons.ok : icons.warn;
-    let descriptionHTML = '';
-    
-    if (manualData) {
-      if (manualData.maintenance?.active) {
-        overallClass = 'banner-maintenance';
-        overallTitle = manualData.maintenance.title || 'システムメンテナンス中です';
-        overallIcon = icons.maintenance;
-        if (manualData.maintenance.description) {
-
-          descriptionHTML = `<p class="banner-desc">${escapeHTML(manualData.maintenance.description)}</p>`;
-        }
-      } else if (manualData.incident?.active) {
-        overallClass = 'banner-down';
-        overallTitle = manualData.incident.title || 'システム障害が発生しています';
-        overallIcon = icons.down;
-        if (manualData.incident.description) {
-
-          descriptionHTML = `<p class="banner-desc">${escapeHTML(manualData.incident.description)}</p>`;
-        }
-      }
-    }
-
-    const updatedAt = new Date(data.last_updated).toLocaleString('ja-JP', {
-      timeZone: 'Asia/Tokyo', // 確実にJSTとして計算させるために追加
-      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-    });
-    // バナーのHTML
-    let bannerHtml = `
-      <div class="overall-banner ${overallClass}">
-        <div class="banner-icon">${overallIcon}</div>
-        <div class="banner-text">
-          <h2>${escapeHTML(overallTitle)}</h2>
-          ${descriptionHTML} 
-          <p class="update-time">最終更新: ${escapeHTML(updatedAt)}(JST)</p>
-        </div>
-      </div>
-    `;
-    
-    let servicesHtml = '';
-    if (data.api_services && data.api_services.length > 0) {
-      servicesHtml += generateServiceGroupHTML('APIサービス', data.api_services, manualData);
-    }
-    if (data.web_services && data.web_services.length > 0) {
-      servicesHtml += generateServiceGroupHTML('Webサービス', data.web_services, manualData);
-    }
-
-    bannerContainer.innerHTML = bannerHtml;
-    servicesContainer.innerHTML = servicesHtml;
-    
-
-    [bannerContainer, maintenanceContainer, servicesContainer].forEach(el => {
-      el.style.display = 'block';
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(15px)';
-      el.style.transition = 'opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1)';
-    });
-
-    // 2. スピナーを滑らかにフェードアウト
-    loading.style.transition = 'opacity 0.3s ease';
-    loading.style.opacity = '0';
-    
-    setTimeout(() => {
-      loading.style.display = 'none'; // 完全に消す
-      
-      // 3. 上から順にフワッと浮かび上がらせる（Staggered Fade-in）
-      requestAnimationFrame(() => {
-        bannerContainer.style.opacity = '1';
-        bannerContainer.style.transform = 'translateY(0)';
-        
-        setTimeout(() => {
-          maintenanceContainer.style.opacity = '1';
-          maintenanceContainer.style.transform = 'translateY(0)';
-        }, 100);
-        
-        setTimeout(() => {
-          servicesContainer.style.opacity = '1';
-          servicesContainer.style.transform = 'translateY(0)';
-        }, 200);
-      });
-    }, 300);
-  }
-
-  loadStatus();
-  setInterval(loadStatus, 60000);
-</script>
-
 <style is:global>
-
-html {
+  html {
     overflow-y: scroll;
   }
 
-  h1 {
-  font-size: 16px; /* ピクセル単位で直接指定 */
-}
-
+  .page-title {
+    margin: 0 0 1.5rem;
+    font-size: 1.25rem;
+    color: #1f2937;
+  }
 
   .status-wrapper {
     max-width: 800px;
     margin: 2rem auto;
   }
 
-  .loading {
-    text-align: center;
-    padding: 4rem 0;
-    color: #666;
+  .fade-in {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
+    animation-delay: var(--delay, 0s);
   }
-  .spinner {
-    width: 30px; height: 30px;
-    border: 3px solid #e5e5ea;
-    border-top-color: #8e8e93;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem auto;
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-  @keyframes spin { 100% { transform: rotate(360deg); } }
 
   .overall-banner {
     display: flex;
@@ -317,28 +178,63 @@ html {
     padding: 1.5rem;
     border-radius: 12px;
     margin-bottom: 2.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
+
   .banner-ok {
     background-color: #f0fdf4;
     border: 1px solid #bbf7d0;
   }
+
   .banner-warning {
     background-color: #fefce8;
     border: 1px solid #fef08a;
   }
+
+  .banner-maintenance {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+  }
+
+  .banner-down {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+  }
+
   .banner-icon svg {
     width: 40px;
     height: 40px;
     margin-right: 1.2rem;
   }
-  .banner-ok .banner-icon svg { color: #16a34a; }
-  .banner-warning .banner-icon svg { color: #ca8a04; }
-  
+
+  .banner-ok .banner-icon svg {
+    color: #16a34a;
+  }
+
+  .banner-warning .banner-icon svg {
+    color: #ca8a04;
+  }
+
+  .banner-maintenance .banner-icon svg {
+    color: #2563eb;
+  }
+
+  .banner-down .banner-icon svg {
+    color: #dc2626;
+  }
+
   .banner-text h2 {
     margin: 0 0 0.2rem 0;
     font-size: 1.25rem;
   }
+
+  .banner-desc {
+    font-size: 0.95rem;
+    color: #4b5563;
+    margin: 0.5rem 0 0.8rem 0;
+    line-height: 1.4;
+  }
+
   .update-time {
     margin: 0;
     font-size: 0.85rem;
@@ -348,6 +244,7 @@ html {
   .service-group {
     margin-bottom: 2.5rem;
   }
+
   .group-title {
     font-size: 1.1rem;
     margin-bottom: 1rem;
@@ -359,20 +256,22 @@ html {
   .service-list {
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     border: 1px solid #eaeaea;
   }
-  
+
   .service-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.2rem 1.5rem; 
+    padding: 1.2rem 1.5rem;
     border-bottom: 1px solid #eaeaea;
   }
+
   .service-row:last-child {
     border-bottom: none;
   }
+
   .service-name {
     font-weight: 500;
     font-size: 1rem;
@@ -381,8 +280,9 @@ html {
   .service-details {
     display: flex;
     align-items: center;
-    gap: 1.5rem; 
+    gap: 1.5rem;
   }
+
   .latency {
     font-size: 0.9rem;
     color: #888;
@@ -401,35 +301,34 @@ html {
     min-width: 90px;
     justify-content: center;
   }
+
   .status-icon {
     width: 16px;
     height: 16px;
   }
 
-  .banner-maintenance {
-    background-color: #eff6ff;
-    border: 1px solid #bfdbfe;
+  .status-ok {
+    background: #f0fdf4;
+    color: #16a34a;
   }
-  .banner-maintenance .banner-icon svg { color: #2563eb; }
-  
-  .banner-down {
-    background-color: #fef2f2;
-    border: 1px solid #fecaca;
-  }
-  .banner-down .banner-icon svg { color: #dc2626; }
 
-  .banner-desc {
-    font-size: 0.95rem;
+  .status-warn {
+    background: #fefce8;
+    color: #ca8a04;
+  }
+
+  .status-down {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
+  .status-unknown {
+    background: #f3f4f6;
     color: #4b5563;
-    margin: 0.5rem 0 0.8rem 0;
-    line-height: 1.4;
   }
 
-  .status-ok { background: #f0fdf4; color: #16a34a; }
-  .status-warn { background: #fefce8; color: #ca8a04; }
-  .status-down { background: #fef2f2; color: #dc2626; }
-  .status-unknown { background: #f3f4f6; color: #4b5563; }
-  .status-maintenance { background: #eff6ff; color: #2563eb; }
-
-  .initially-hidden { display: none; }
+  .status-maintenance {
+    background: #eff6ff;
+    color: #2563eb;
+  }
 </style>
