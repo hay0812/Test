@@ -3,3 +3,4 @@
 .env
 .DS_Store
 public/
+node_modules/
