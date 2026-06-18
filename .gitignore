@@ -3,6 +3,3 @@
 .env
 .DS_Store
 public/
-.wrangler/
-dist/
-node_modules/
