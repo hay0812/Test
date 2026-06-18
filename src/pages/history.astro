@@ -8,6 +8,7 @@ const scheduled = maintenanceInfo
   .filter((m) => new Date(m.endAt).getTime() > now)
   .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 
+
 const past = maintenanceInfo
   .filter((m) => new Date(m.endAt).getTime() <= now)
   .sort((a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime());
