@@ -13,4 +13,28 @@ export default defineConfig({
       enabled: true,
     },
   }),
+  security: {
+    csp: {
+      scriptDirective: {
+        resources: [
+          "'self'",
+        ],
+      },
+      styleDirective: {
+        resources: ["'self'"],
+      },
+      directives: [
+        "default-src 'none'",
+        "base-uri 'none'",
+        "object-src 'none'",
+        "img-src 'self'",
+        "connect-src 'none'",
+        "form-action 'none'",
+        "upgrade-insecure-requests",
+        "font-src 'none'",
+        "frame-src 'none'",
+        "require-trusted-types-for 'script'",
+      ],
+    },
+  },
 });

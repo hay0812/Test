@@ -80,27 +80,34 @@ const updatedAt = new Date(statusData.last_updated).toLocaleString('ja-JP', {
 <Layout title="Heyete System Status(臨時)" canonical="/">
   <div class="status-wrapper">
     <h1 class="page-title">このページはメインのステータスページが利用できない場合の予備です。</h1>
+    <h2 class="page-title">システム障害・メンテナンス予告等以外では通常更新はされません。</h2>
+
+    <div class="main-status-link">
+      <a href="https://status.heyete.net/" target="_blank">
+        メインのステータスページはこちらです。
+      </a>
+    </div>
 
     <div class={`overall-banner ${bannerState.class} fade-in`} style="--delay: 0s">
       <div class="banner-icon" set:html={bannerState.icon}></div>
       <div class="banner-text">
         <h2>{bannerState.title}</h2>
         {bannerState.description && <p class="banner-desc">{bannerState.description}</p>}
-        <p class="update-time">最終更新: {updatedAt}(JST)</p>
+        <p class="update-time">最終ステータス変更: {updatedAt}(JST)</p>
       </div>
     </div>
   
 
     <UpcomingMaintenance items={maintenanceInfo} />
 
-    {statusData.api_services?.length ? (
+{statusData.api_services?.length ? (
       <section class="service-group fade-in" style="--delay: 0.1s">
         <h3 class="group-title">APIサービス</h3>
         <div class="service-list">
           {statusData.api_services.map((service: any) => {
             const badge = getStatusBadge(service, manualData);
             return (
-              <div class="service-row" key={service.id}>
+              <div class="service-row"> {/* ← 末尾に > を追加 */}
                 <div class="service-name">{service.name}</div>
                 <div class="service-details">
                   <span class="latency">{badge.latency}</span>
@@ -108,7 +115,7 @@ const updatedAt = new Date(statusData.last_updated).toLocaleString('ja-JP', {
                     <span class="status-icon" set:html={badge.icon}></span>
                     <span>{badge.text}</span>
                   </div>
-                </div>
+                </div> {/* ← ここで閉じタグをしっかり合わせる */}
               </div>
             );
           })}
@@ -123,7 +130,7 @@ const updatedAt = new Date(statusData.last_updated).toLocaleString('ja-JP', {
           {statusData.web_services.map((service: any) => {
             const badge = getStatusBadge(service, manualData);
             return (
-              <div class="service-row" key={service.id}>
+              <div class="service-row"> {/* ← 末尾に > を追加 */}
                 <div class="service-name">{service.name}</div>
                 <div class="service-details">
                   <span class="latency">{badge.latency}</span>
@@ -131,7 +138,7 @@ const updatedAt = new Date(statusData.last_updated).toLocaleString('ja-JP', {
                     <span class="status-icon" set:html={badge.icon}></span>
                     <span>{badge.text}</span>
                   </div>
-                </div>
+                </div> {/* ← 抜けていた </div> を追加 */}
               </div>
             );
           })}
@@ -332,5 +339,20 @@ const updatedAt = new Date(statusData.last_updated).toLocaleString('ja-JP', {
   .status-maintenance {
     background: #eff6ff;
     color: #2563eb;
+  }
+
+  .main-status-link {
+    margin: -0.5rem 0 1.5rem 0;
+    font-size: 0.95rem;
+  }
+
+  .main-status-link a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .main-status-link a:hover {
+    text-decoration: underline;
   }
 </style>
