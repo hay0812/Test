@@ -121,11 +121,17 @@ jobs:
         if: steps.decide-build.outputs.should_build == 'true'
         run: npm run build
 
+      - name: Copy CNAME to Pages output
+        if: steps.decide-build.outputs.should_build == 'true'
+        run: |
+          mkdir -p dist/client
+          cp public/CNAME dist/client/CNAME || true
+
       - name: Upload artifact
         if: steps.decide-build.outputs.should_build == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./dist/client
 
       - name: Deploy to GitHub Pages
         if: steps.decide-build.outputs.should_build == 'true'
