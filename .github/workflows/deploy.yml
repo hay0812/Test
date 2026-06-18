@@ -101,8 +101,10 @@ jobs:
               "  process.exit(0);" \
               "}" \
             > /tmp/check_status.js
+            set +e
             node /tmp/check_status.js
             ret=$?
+            set -e
             rm -f /tmp/check_status.js
             if [ $ret -eq 0 ]; then
               echo "should_build=true" >> $GITHUB_OUTPUT
