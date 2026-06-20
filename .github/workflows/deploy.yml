@@ -91,8 +91,12 @@ jobs:
               "  const oldJSON = JSON.parse(oldJSONtext);" \
               "  const newJSON = JSON.parse(fs.readFileSync('status.json', 'utf8'));" \
               "  const meaningful = isMeaningfulStatusDiff(oldJSON, newJSON);" \
+              "  const hasNonOperationalStatus =" \
+              "    oldJSON.system_status !== 'all_systems_operational' ||" \
+              "    newJSON.system_status !== 'all_systems_operational';" \
               "  console.log('meaningful diff:', meaningful);" \
-              "  if (meaningful) {" \
+              "  console.log('has non-operational system_status:', hasNonOperationalStatus);" \
+              "  if (meaningful && hasNonOperationalStatus) {" \
               "    process.exit(0);" \
               "  }" \
               "  process.exit(1);" \
