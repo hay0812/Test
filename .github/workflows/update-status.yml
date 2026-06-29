@@ -2,7 +2,7 @@ name: Update API Status JSON
 
 on:
   schedule:
-  - cron: "4,13,22,34,41,53 * * * *"
+  - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -152,7 +152,7 @@ jobs:
           }
 
           async function check() {
-            const maxPasses = 3;
+            const maxPasses = 2; //2回に変更
             const waitMs = 20000; // 20秒待機
 
             // 試行ごとの結果保存用オブジェクト
