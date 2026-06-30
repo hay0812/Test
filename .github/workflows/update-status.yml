@@ -32,9 +32,9 @@ jobs:
         run: |
           cat << 'EOF' > generate.js
           const fs = require('fs');
-          const apiUserAgent = process.env.STATUS_CHECK_API_USER_AGENT;
+          const statusCheckUserAgent = process.env.STATUS_CHECK_API_USER_AGENT;
 
-          if (!apiUserAgent) {
+          if (!statusCheckUserAgent) {
             throw new Error('STATUS_CHECK_API_USER_AGENT secret is not set.');
           }
 
@@ -78,7 +78,7 @@ jobs:
               const options = { 
                 signal: controller.signal,
                 headers: {
-                  "User-Agent": isApi ? apiUserAgent : "HeyeteBot"
+                  "User-Agent": statusCheckUserAgent
                 }
               };
 
