@@ -1,16 +1,16 @@
 {
-  "last_updated": "2026-06-30T05:40:39.833Z",
+  "last_updated": "2026-06-30T06:00:38.075Z",
   "system_status": "partial_outage",
   "api_services": [
     {
       "id": "bbs",
       "name": "24.anon API",
       "status": "operational",
-      "latency_ms": 173,
+      "latency_ms": 121,
       "details": {
         "success": true,
         "status": "ok",
-        "timestamp": 1782798038
+        "timestamp": 1782799237
       },
       "code": 200
     },
@@ -18,10 +18,10 @@
       "id": "ruruna",
       "name": "Ruruna AI API",
       "status": "operational",
-      "latency_ms": 182,
+      "latency_ms": 119,
       "details": {
         "status": "ok",
-        "timestamp": 1782798038158,
+        "timestamp": 1782799237183,
         "dependencies": {
           "kv": "ok",
           "ai": "ok"
@@ -33,10 +33,10 @@
       "id": "support",
       "name": "サポートお問い合わせ API",
       "status": "operational",
-      "latency_ms": 169,
+      "latency_ms": 122,
       "details": {
         "status": "ok",
-        "timestamp": 1782798038267,
+        "timestamp": 1782799237234,
         "dependencies": {
           "kv": "ok",
           "resend": "ready"
@@ -48,10 +48,10 @@
       "id": "accounts",
       "name": "Heyeteアカウント API",
       "status": "operational",
-      "latency_ms": 463,
+      "latency_ms": 481,
       "details": {
         "status": "ok",
-        "timestamp": 1782798038477,
+        "timestamp": 1782799237408,
         "dependencies": {
           "db": "ok",
           "session_kv": "ok"
@@ -65,91 +65,91 @@
       "id": "web-top",
       "name": "総合トップサイト",
       "status": "operational",
-      "latency_ms": 268,
+      "latency_ms": 133,
       "code": 200
     },
     {
       "id": "web-myaccounts",
       "name": "アカウントダッシュボード",
       "status": "down",
-      "latency_ms": 102,
+      "latency_ms": 41,
       "code": 403
     },
     {
       "id": "web-accounts",
       "name": "Heyeteアカウントログイン等",
       "status": "down",
-      "latency_ms": 24,
+      "latency_ms": 9,
       "code": 403
     },
     {
       "id": "web-ruruna",
       "name": "Ruruna AI",
       "status": "down",
-      "latency_ms": 98,
+      "latency_ms": 39,
       "code": 403
     },
     {
       "id": "web-anon",
       "name": "24.anon",
       "status": "down",
-      "latency_ms": 112,
+      "latency_ms": 38,
       "code": 403
     },
     {
       "id": "web-news",
       "name": "Heyete News",
       "status": "down",
-      "latency_ms": 99,
+      "latency_ms": 25,
       "code": 403
     },
     {
       "id": "web-blog",
       "name": "Heyete Blog",
       "status": "down",
-      "latency_ms": 99,
+      "latency_ms": 29,
       "code": 403
     },
     {
       "id": "web-dev",
       "name": "Heyete Developer",
       "status": "down",
-      "latency_ms": 128,
+      "latency_ms": 39,
       "code": 403
     },
     {
       "id": "web-corp",
       "name": "コーポレートサイト",
       "status": "down",
-      "latency_ms": 94,
+      "latency_ms": 30,
       "code": 403
     },
     {
       "id": "web-policies",
       "name": "規約とポリシー",
       "status": "operational",
-      "latency_ms": 120,
+      "latency_ms": 59,
       "code": 200
     },
     {
       "id": "web-support",
       "name": "サポートお問い合わせ",
       "status": "down",
-      "latency_ms": 92,
+      "latency_ms": 23,
       "code": 403
     },
     {
       "id": "web-docs",
       "name": "資料サイト",
       "status": "operational",
-      "latency_ms": 208,
+      "latency_ms": 97,
       "code": 200
     },
     {
       "id": "web-anon-lite",
       "name": "24.anon 軽量版",
       "status": "operational",
-      "latency_ms": 398,
+      "latency_ms": 276,
       "code": 200
     }
   ]
