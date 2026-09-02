@@ -1,16 +1,16 @@
 {
-  "last_updated": "2026-09-01T23:40:47.786Z",
-  "system_status": "all_systems_operational",
+  "last_updated": "2026-09-02T00:01:50.337Z",
+  "system_status": "partial_outage",
   "api_services": [
     {
       "id": "bbs",
       "name": "24.anon API",
       "status": "operational",
-      "latency_ms": 380,
+      "latency_ms": 399,
       "details": {
         "success": true,
         "status": "ok",
-        "timestamp": 1788306046
+        "timestamp": 1788307283
       },
       "code": 200
     },
@@ -18,10 +18,10 @@
       "id": "ruruna",
       "name": "Ruruna AI API",
       "status": "operational",
-      "latency_ms": 129,
+      "latency_ms": 302,
       "details": {
         "status": "ok",
-        "timestamp": 1788306046118,
+        "timestamp": 1788307283301,
         "dependencies": {
           "kv": "ok",
           "ai": "ok"
@@ -33,10 +33,10 @@
       "id": "support",
       "name": "サポートお問い合わせ API",
       "status": "operational",
-      "latency_ms": 131,
+      "latency_ms": 214,
       "details": {
         "status": "ok",
-        "timestamp": 1788306046157,
+        "timestamp": 1788307283489,
         "dependencies": {
           "kv": "ok",
           "resend": "ready"
@@ -48,10 +48,10 @@
       "id": "accounts",
       "name": "Heyeteアカウント API",
       "status": "operational",
-      "latency_ms": 304,
+      "latency_ms": 440,
       "details": {
         "status": "ok",
-        "timestamp": 1788306046206,
+        "timestamp": 1788307283739,
         "dependencies": {
           "db": "ok",
           "session_kv": "ok"
@@ -65,92 +65,92 @@
       "id": "web-top",
       "name": "総合トップサイト",
       "status": "operational",
-      "latency_ms": 121,
+      "latency_ms": 265,
       "code": 200
     },
     {
       "id": "web-myaccounts",
       "name": "アカウントダッシュボード",
       "status": "operational",
-      "latency_ms": 61,
+      "latency_ms": 116,
       "code": 200
     },
     {
       "id": "web-accounts",
       "name": "Heyeteアカウントログイン等",
       "status": "operational",
-      "latency_ms": 27,
+      "latency_ms": 45,
       "code": 200
     },
     {
       "id": "web-ruruna",
       "name": "Ruruna AI",
       "status": "operational",
-      "latency_ms": 245,
+      "latency_ms": 481,
       "code": 200
     },
     {
       "id": "web-anon",
       "name": "24.anon",
       "status": "operational",
-      "latency_ms": 118,
+      "latency_ms": 201,
       "code": 200
     },
     {
       "id": "web-news",
       "name": "Heyete News",
       "status": "operational",
-      "latency_ms": 140,
+      "latency_ms": 238,
       "code": 200
     },
     {
       "id": "web-blog",
       "name": "Heyete Blog",
       "status": "operational",
-      "latency_ms": 85,
+      "latency_ms": 237,
       "code": 200
     },
     {
       "id": "web-dev",
       "name": "Heyete Developer",
       "status": "operational",
-      "latency_ms": 121,
+      "latency_ms": 187,
       "code": 200
     },
     {
       "id": "web-corp",
       "name": "コーポレートサイト",
       "status": "operational",
-      "latency_ms": 117,
+      "latency_ms": 223,
       "code": 200
     },
     {
       "id": "web-policies",
       "name": "規約とポリシー",
-      "status": "operational",
-      "latency_ms": 52,
-      "code": 200
+      "status": "down",
+      "latency_ms": 10000,
+      "error": "This operation was aborted"
     },
     {
       "id": "web-support",
       "name": "サポートお問い合わせ",
-      "status": "operational",
-      "latency_ms": 87,
-      "code": 200
+      "status": "down",
+      "latency_ms": 10001,
+      "error": "This operation was aborted"
     },
     {
       "id": "web-docs",
       "name": "資料サイト",
-      "status": "operational",
-      "latency_ms": 113,
-      "code": 200
+      "status": "down",
+      "latency_ms": 7061,
+      "error": "This operation was aborted"
     },
     {
       "id": "web-anon-lite",
       "name": "24.anon 軽量版",
-      "status": "operational",
-      "latency_ms": 621,
-      "code": 200
+      "status": "down",
+      "latency_ms": 5273,
+      "error": "This operation was aborted"
     }
   ]
 }
